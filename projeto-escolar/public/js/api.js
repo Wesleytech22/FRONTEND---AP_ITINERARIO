@@ -86,7 +86,18 @@ function getUserPerfil() {
 
 // Verificar se é coordenador
 function isCoordenador() {
-    return getUserPerfil() === 'coordenador';
+    const perfil = getUserPerfil();
+    return perfil === 'coordenador' || perfil === 'direcao';
+}
+
+// Verificar se é diretor
+function isDiretor() {
+    return getUserPerfil() === 'direcao';
+}
+
+// Verificar se é professor
+function isProfessor() {
+    return getUserPerfil() === 'professor';
 }
 
 // API endpoints
@@ -97,6 +108,8 @@ const api = {
     getCurrentUser,
     getUserPerfil,
     isCoordenador,
+    isDiretor,
+    isProfessor,
     
     // Alunos
     getAlunos: () => fetchAPI('/alunos'),
@@ -107,6 +120,24 @@ const api = {
     
     // Turmas
     getTurmas: () => fetchAPI('/turmas'),
+    getTurma: (id) => fetchAPI(`/turmas/${id}`),
+    
+    // Ocorrências
+    getOcorrencias: (alunoId) => fetchAPI(`/ocorrencias/aluno/${alunoId}`),
+    registrarFalta: (data) => fetchAPI('/ocorrencias/falta', { method: 'POST', body: JSON.stringify(data) }),
+    registrarComportamento: (data) => fetchAPI('/ocorrencias/comportamento', { method: 'POST', body: JSON.stringify(data) }),
+    
+    // Laudos
+    getLaudos: (alunoId) => fetchAPI(`/laudos/aluno/${alunoId}`),
+    uploadLaudo: (formData) => {
+        return fetch(`${API_URL}/laudos`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        }).then(res => res.json());
+    }
 };
 
 // Exportar para uso global
@@ -116,3 +147,5 @@ window.logout = logout;
 window.getCurrentUser = getCurrentUser;
 window.getUserPerfil = getUserPerfil;
 window.isCoordenador = isCoordenador;
+window.isDiretor = isDiretor;
+window.isProfessor = isProfessor;
