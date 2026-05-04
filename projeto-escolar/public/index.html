@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Escola - Identificação de Risco</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 EduRisk</h2>
+                <p>Sistema de Acompanhamento</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="alunos-risco">
+                    <span class="icon">⚠️</span>
+                    <span>Alunos em Risco</span>
+                </a>
+                <a href="#" class="nav-item" data-page="alunos">
+                    <span class="icon">👨‍🎓</span>
+                    <span>Todos os Alunos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="turmas">
+                    <span class="icon">🏫</span>
+                    <span>Turmas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="relatorios">
+                    <span class="icon">📈</span>
+                    <span>Relatórios</span>
+                </a>
+                <a href="#" class="nav-item" data-page="config">
+                    <span class="icon">⚙️</span>
+                    <span>Configurações</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <div>
+                        <div class="user-name">Administrador</div>
+                        <div class="user-role">Coordenador</div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <span>🚪</span> Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="page-subtitle">Visão geral da escola</p>
+                </div>
+
+                <div class="header-filters">
+                    <select id="filter-turma" class="filter-select">
+                        <option value="">Todas as Turmas</option>
+                        <option>3º Ano A</option>
+                        <option>3º Ano B</option>
+                        <option>3º Ano C</option>
+                        <option>2º Ano A</option>
+                        <option>2º Ano B</option>
+                    </select>
+
+                    <select id="filter-periodo" class="filter-select">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                    </select>
+
+                    <button class="btn-primary" onclick="refreshData()">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Content Area -->
+            <div id="content-area" class="content-area">
+                <div class="loading">Carregando...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para ações rápidas -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nova Ação</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- Modal content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/alunos.js"></script>
+    <script src="js/aluno-detalhe.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
