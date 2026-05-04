@@ -1,101 +1,118 @@
-// API Configuration - Conectar com backend
-// Altere esta URL para o endereço do seu backend
-const API_URL = 'http://localhost:3000'; // Backend rodando nesta porta
+// Configuração da API
+const API_URL = 'http://localhost:3000/api';
 
-class API {
-    static async get(endpoint) {
-        try {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+// Armazenar token
+let authToken = localStorage.getItem('token');
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('API GET Error:', error);
-            // Retorna dados mockados para desenvolvimento
-            return this.getMockData(endpoint);
+// Função de login
+async function login(email, senha) {
+    try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, senha })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            authToken = data.token;
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            return { success: true, usuario: data.usuario };
+        } else {
+            return { success: false, error: 'Email ou senha inválidos' };
         }
-    }
-
-    static async post(endpoint, data) {
-        try {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('API POST Error:', error);
-            return { error: error.message };
-        }
-    }
-
-    static async put(endpoint, data) {
-        try {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('API PUT Error:', error);
-            return { error: error.message };
-        }
-    }
-
-    static async delete(endpoint) {
-        try {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'DELETE'
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('API DELETE Error:', error);
-            return { error: error.message };
-        }
-    }
-
-    // Dados mockados para desenvolvimento
-    static getMockData(endpoint) {
-        if (endpoint === '/alunos') {
-            return [
-                { id: 1, nome: "João Silva", matricula: "2024001", turma: "3º Ano A", responsavel: "Maria Silva", contato: "(11) 99999-1111", created_at: "2026-05-03" },
-                { id: 2, nome: "Maria Santos", matricula: "2024002", turma: "3º Ano A", responsavel: "José Santos", contato: "(11) 99999-2222", created_at: "2026-05-03" },
-                { id: 3, nome: "Pedro Oliveira", matricula: "2024003", turma: "3º Ano B", responsavel: "Ana Oliveira", contato: "(11) 99999-3333", created_at: "2026-05-03" },
-                { id: 4, nome: "Ana Carolina", matricula: "2024004", turma: "3º Ano C", responsavel: "Carlos Souza", contato: "(11) 97777-4444", created_at: "2026-05-03" }
-            ];
-        }
-        return [];
+    } catch (error) {
+        console.error('Erro no login:', error);
+        return { success: false, error: 'Erro ao conectar ao servidor' };
     }
 }
 
-// Funções específicas
-async function getAlunos() {
-    return await API.get('/alunos');
+// Função de logout
+function logout() {
+    authToken = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('usuarioPerfil');
+    
+    // Redirecionar para a página de login
+    window.location.href = '/login.html';
 }
 
-async function getAluno(id) {
-    const alunos = await API.get('/alunos');
-    return alunos.find(a => a.id == id);
+// Função para fazer requisições autenticadas
+async function fetchAPI(endpoint, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers
+    });
+    
+    if (response.status === 401) {
+        // Token expirado, fazer logout
+        logout();
+        throw new Error('Sessão expirada. Faça login novamente.');
+    }
+    
+    return response.json();
 }
 
-async function createAluno(aluno) {
-    return await API.post('/alunos', aluno);
+// Verificar se está logado
+function isAuthenticated() {
+    return authToken !== null && localStorage.getItem('token') !== null;
 }
 
-async function updateAluno(id, aluno) {
-    return await API.put(`/alunos/${id}`, aluno);
+// Obter usuário atual
+function getCurrentUser() {
+    const user = localStorage.getItem('usuario');
+    return user ? JSON.parse(user) : null;
 }
 
-async function deleteAluno(id) {
-    return await API.delete(`/alunos/${id}`);
+// Obter perfil do usuário
+function getUserPerfil() {
+    const user = getCurrentUser();
+    return user ? user.perfil : null;
 }
+
+// Verificar se é coordenador
+function isCoordenador() {
+    return getUserPerfil() === 'coordenador';
+}
+
+// API endpoints
+const api = {
+    login,
+    logout,
+    isAuthenticated,
+    getCurrentUser,
+    getUserPerfil,
+    isCoordenador,
+    
+    // Alunos
+    getAlunos: () => fetchAPI('/alunos'),
+    getAluno: (id) => fetchAPI(`/alunos/${id}`),
+    createAluno: (aluno) => fetchAPI('/alunos', { method: 'POST', body: JSON.stringify(aluno) }),
+    updateAluno: (id, aluno) => fetchAPI(`/alunos/${id}`, { method: 'PUT', body: JSON.stringify(aluno) }),
+    deleteAluno: (id) => fetchAPI(`/alunos/${id}`, { method: 'DELETE' }),
+    
+    // Turmas
+    getTurmas: () => fetchAPI('/turmas'),
+};
+
+// Exportar para uso global
+window.api = api;
+window.login = login;
+window.logout = logout;
+window.getCurrentUser = getCurrentUser;
+window.getUserPerfil = getUserPerfil;
+window.isCoordenador = isCoordenador;
