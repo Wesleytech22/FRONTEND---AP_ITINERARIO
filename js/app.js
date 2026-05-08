@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/login.html';
         return;
     }
-    
+
     // Carregar informações do usuário
     loadUserInfo();
-    
+
     // Configurar navegação
     setupNavigation();
 
@@ -21,7 +21,7 @@ function loadUserInfo() {
     if (user) {
         document.getElementById('userName').innerText = user.nome;
         document.getElementById('userAvatar').innerText = user.nome.charAt(0);
-        
+
         let perfilTexto = '';
         let perfilClasse = '';
         if (user.perfil === 'professor') {
@@ -34,14 +34,14 @@ function loadUserInfo() {
             perfilTexto = 'Diretor';
             perfilClasse = 'diretor';
         }
-        
+
         document.getElementById('userRole').innerHTML = `<span class="role-badge ${perfilClasse}">${perfilTexto}</span>`;
-        
+
         // Mostrar/esconder menus conforme perfil
         const isAdmin = (user.perfil === 'coordenador' || user.perfil === 'direcao');
         const navTurmas = document.getElementById('navTurmas');
         const navUsuarios = document.getElementById('navUsuarios');
-        
+
         if (navTurmas) navTurmas.style.display = isAdmin ? 'flex' : 'none';
         if (navUsuarios) navUsuarios.style.display = (user.perfil === 'direcao') ? 'flex' : 'none';
     }
@@ -110,12 +110,12 @@ function setupNavigation() {
 async function loadDashboard() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
         const turmas = await api.getTurmas();
         const user = api.getCurrentUser();
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
@@ -148,7 +148,7 @@ async function loadDashboard() {
                         <tr><th>Nome</th><th>Matrícula</th><th>Turma</th><th>Ações</th></tr>
                     </thead>
                     <tbody>
-                        ${alunos.slice(0,5).map(aluno => `
+                        ${alunos.slice(0, 5).map(aluno => `
                             <tr>
                                 <td>${aluno.nome}</td>
                                 <td>${aluno.matricula}</td>
@@ -183,15 +183,14 @@ async function loadDashboard() {
 async function loadAlunosRisco() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
-        // Simular classificação de risco
         const alunosComRisco = alunos.map((aluno, index) => ({
             ...aluno,
             risco: index % 3 === 0 ? 'alto' : (index % 2 === 0 ? 'medio' : 'baixo')
         })).filter(a => a.risco !== 'baixo');
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
@@ -234,10 +233,10 @@ async function loadAlunosRisco() {
 async function loadAlunos() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
-        
+
         content.innerHTML = `
             ${api.isCoordenador() ? '<button class="btn-primary" onclick="showNovoAlunoModal()" style="margin-bottom:1rem;">+ Novo Aluno</button>' : ''}
             <div class="data-table">
@@ -282,10 +281,10 @@ async function loadAlunos() {
 async function loadTurmas() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const turmas = await api.getTurmas();
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 ${turmas.map(turma => `
@@ -306,14 +305,14 @@ async function loadTurmas() {
 async function verTurma(turmaId, turmaNome) {
     document.getElementById('page-title').innerText = `Turma: ${turmaNome}`;
     document.getElementById('page-subtitle').innerText = 'Alunos matriculados';
-    
+
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando alunos...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
         const alunosDaTurma = alunos.filter(aluno => aluno.turma === turmaNome || aluno.turma_id == turmaId);
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
@@ -352,10 +351,10 @@ async function verTurma(turmaId, turmaNome) {
 async function loadFaltas() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
@@ -382,10 +381,10 @@ async function loadFaltas() {
 async function loadComportamento() {
     const content = document.getElementById('content-area');
     content.innerHTML = '<div class="loading">Carregando...</div>';
-    
+
     try {
         const alunos = await api.getAlunos();
-        
+
         content.innerHTML = `
             <div class="stats-grid">
                 ${alunos.map(aluno => `
@@ -486,12 +485,12 @@ async function salvarNovoAluno() {
         responsavel: document.getElementById('alunoResponsavel').value,
         contato: document.getElementById('alunoContato').value
     };
-    
+
     if (!novoAluno.nome || !novoAluno.matricula) {
         alert('Nome e Matrícula são obrigatórios!');
         return;
     }
-    
+
     const result = await api.createAluno(novoAluno);
     if (result.id) {
         alert('Aluno criado com sucesso!');
@@ -524,7 +523,7 @@ async function atualizarAluno(id) {
         responsavel: document.getElementById('alunoResponsavel').value,
         contato: document.getElementById('alunoContato').value
     };
-    
+
     const result = await api.updateAluno(id, alunoAtualizado);
     if (result.message) {
         alert('Aluno atualizado com sucesso!');
@@ -566,7 +565,7 @@ async function salvarFalta(alunoId) {
         quantidade: document.getElementById('qtdFaltas').value,
         observacao: document.getElementById('obsFalta').value
     };
-    
+
     const result = await api.registrarFalta(data);
     if (result.id) {
         alert('Falta registrada com sucesso!');
@@ -604,7 +603,7 @@ async function salvarComportamento(alunoId) {
         descricao: document.getElementById('descComp').value,
         data: document.getElementById('dataComp').value
     };
-    
+
     const result = await api.registrarComportamento(data);
     if (result.id) {
         alert('Comportamento registrado com sucesso!');
@@ -618,10 +617,10 @@ async function salvarComportamento(alunoId) {
 // Detalhes do Aluno
 async function verDetalhesAluno(id) {
     const aluno = await api.getAluno(id);
-    
+
     document.getElementById('page-title').innerText = aluno.nome;
     document.getElementById('page-subtitle').innerText = 'Detalhes do Aluno';
-    
+
     const content = document.getElementById('content-area');
     content.innerHTML = `
         <div style="background:white;border-radius:12px;padding:1.5rem;">
